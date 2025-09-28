@@ -37,6 +37,7 @@ MyWebApp is a clean, minimal ASP.NET Core web application that serves as a found
 ## ✨ Features
 
 - 🏠 **Home Page**: Welcome landing page with navigation
+- 📋 **Todo Management**: Complete task management system with create, update, delete, and completion tracking
 - 🔒 **Privacy Policy**: Dedicated privacy policy page
 - ❌ **Error Handling**: Custom error pages with user-friendly messages
 - 📱 **Responsive Design**: Mobile-first Bootstrap-based UI
@@ -215,6 +216,7 @@ Detailed documentation is organized in the `docs/` folder:
 | [🛠️ Development](docs/development.md) | Development setup, guidelines, and best practices |
 | [🚀 Deployment](docs/deployment.md) | Deployment procedures and environment configuration |
 | [📄 Program.cs](docs/Program.md) | Application entry point documentation |
+| [📋 Todos](docs/Todos.md) | Todo management feature documentation |
 | [🏠 Pages](docs/) | Individual page documentation |
 | [🎨 Styling](docs/SiteCSS.md) | CSS and styling guidelines |
 | [⚡ JavaScript](docs/SiteJS.md) | Client-side scripting documentation |
