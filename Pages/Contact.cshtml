@@ -1,0 +1,52 @@
+@page
+@model ContactModel
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="container">
+    <h1>@ViewData["Title"]</h1>
+    <p>Please fill out the form below and we'll get back to you as soon as possible.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-success" role="alert">
+            @Model.Message
+        </div>
+    }
+
+    <form method="post" class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="UserInfo.Name" class="form-label"></label>
+            <input asp-for="UserInfo.Name" class="form-control" />
+            <span asp-validation-for="UserInfo.Name" class="text-danger"></span>
+        </div>
+        
+        <div class="col-md-6">
+            <label asp-for="UserInfo.Email" class="form-label"></label>
+            <input asp-for="UserInfo.Email" class="form-control" type="email" />
+            <span asp-validation-for="UserInfo.Email" class="text-danger"></span>
+        </div>
+        
+        <div class="col-md-6">
+            <label asp-for="UserInfo.Phone" class="form-label"></label>
+            <input asp-for="UserInfo.Phone" class="form-control" type="tel" />
+            <span asp-validation-for="UserInfo.Phone" class="text-danger"></span>
+        </div>
+        
+        <div class="col-12">
+            <label asp-for="UserInfo.Message" class="form-label"></label>
+            <textarea asp-for="UserInfo.Message" class="form-control" rows="4" placeholder="Enter your message here (optional)"></textarea>
+            <span asp-validation-for="UserInfo.Message" class="text-danger"></span>
+        </div>
+        
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit Information</button>
+            <a asp-page="/Index" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
