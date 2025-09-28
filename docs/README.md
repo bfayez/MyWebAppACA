@@ -20,6 +20,7 @@ This directory contains comprehensive documentation for the MyWebApp ASP.NET Cor
 |----------|-------------|---------|
 | [📄 Program.cs](Program.md) | Application entry point and configuration | ✅ Enhanced |
 | [🏠 Index Page](Index.md) | Home page component documentation | ⚠️ Basic |
+| [📋 Todos Page](Todos.md) | Todo management feature documentation | ✅ Complete |
 | [📞 Contact Page](Contact.md) | Contact page component documentation | ⚠️ Basic |
 | [🔒 Privacy Page](Privacy.md) | Privacy policy page documentation | ⚠️ Basic |
 | [❌ Error Page](Error.md) | Error handling page documentation | ⚠️ Basic |
