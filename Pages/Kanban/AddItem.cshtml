@@ -1,0 +1,175 @@
+@page
+@model MyWebApp.Pages.Kanban.AddItemModel
+@{
+    ViewData["Title"] = "Add New Item";
+}
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Kanban">Kanban Board</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add New Item</li>
+        </ol>
+    </nav>
+
+    <h1>✨ @ViewData["Title"]</h1>
+    <p>Create a new item for your Kanban board. Items are created with "New" status by default.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
+            @Model.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Item Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NewItem.Title" class="form-label"></label>
+                            <input asp-for="NewItem.Title" class="form-control" placeholder="Enter item title" required />
+                            <span asp-validation-for="NewItem.Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="NewItem.AssignedToId" class="form-label"></label>
+                            <select asp-for="NewItem.AssignedToId" class="form-select" id="assignToSelect">
+                                <option value="">Unassigned</option>
+                                @foreach (var member in Model.TeamMembers)
+                                {
+                                    <option value="@member.Id">@member.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="NewItem.Description" class="form-label"></label>
+                            <textarea asp-for="NewItem.Description" class="form-control" rows="4" placeholder="Enter description (optional)"></textarea>
+                            <span asp-validation-for="NewItem.Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle"></i> Add Item (New Status)
+                            </button>
+                            <a asp-page="/Kanban" class="btn btn-secondary ms-2">
+                                <i class="bi bi-arrow-left"></i> Back to Kanban Board
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">💡 Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Use descriptive titles</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Add detailed descriptions</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Assign to team members</li>
+                        <li class="mb-0"><i class="bi bi-info-circle text-info"></i> Items start as "New" status</li>
+                    </ul>
+                </div>
+            </div>
+            
+            @if (!Model.TeamMembers.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people h2 text-muted"></i>
+                        <p class="text-muted">No team members available for assignment.</p>
+                        <a asp-page="/Kanban/TeamMembers" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus"></i> Add Team Members
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    // Insert alert before the form
+                    const container = document.querySelector('.container-fluid');
+                    const form = document.querySelector('.card');
+                    container.insertBefore(alertDiv, form);
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Scroll to top to show success message
+                    window.scrollTo(0, 0);
+                } else {
+                    // Handle validation errors
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(field => {
+                            const input = document.querySelector(`[name="${field}"]`);
+                            if (input) {
+                                const errorSpan = input.parentElement.querySelector('.text-danger');
+                                if (errorSpan) {
+                                    errorSpan.textContent = data.errors[field][0];
+                                }
+                            }
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the item. Please try again.');
+            })
+            .finally(() => {
+                // Restore button
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        });
+    </script>
+}

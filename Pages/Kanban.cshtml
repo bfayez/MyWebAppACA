@@ -5,8 +5,20 @@
 }
 
 <div class="container-fluid">
-    <h1>🗂️ @ViewData["Title"]</h1>
-    <p>Manage your project items with our visual Kanban board!</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>🗂️ @ViewData["Title"]</h1>
+            <p>Manage your project items with our visual Kanban board!</p>
+        </div>
+        <div>
+            <a asp-page="/Kanban/AddItem" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Add New Item
+            </a>
+            <a asp-page="/Kanban/TeamMembers" class="btn btn-success">
+                <i class="bi bi-people"></i> Manage Team Members (@Model.TeamMembers.Count)
+            </a>
+        </div>
+    </div>
 
     @if (!string.IsNullOrEmpty(Model.Message))
     {
@@ -15,106 +27,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-
-    <!-- Add New Item Form -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">✨ Add New Item</h5>
-        </div>
-        <div class="card-body">
-            <form method="post" class="row g-3" data-val="false">
-                <input type="hidden" name="SubmitAction" value="AddItem" />
-                <div class="col-md-4">
-                    <label asp-for="NewItem.Title" class="form-label"></label>
-                    <input asp-for="NewItem.Title" class="form-control" placeholder="Enter item title" />
-                    <span asp-validation-for="NewItem.Title" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-4">
-                    <label asp-for="NewItem.Description" class="form-label"></label>
-                    <input asp-for="NewItem.Description" class="form-control" placeholder="Enter description (optional)" />
-                    <span asp-validation-for="NewItem.Description" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-4">
-                    <label asp-for="NewItem.AssignedToId" class="form-label"></label>
-                    <select asp-for="NewItem.AssignedToId" class="form-select">
-                        <option value="">Unassigned</option>
-                        @foreach (var member in Model.TeamMembers)
-                        {
-                            <option value="@member.Id">@member.Name</option>
-                        }
-                    </select>
-                </div>
-                
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Add Item (New Status)
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Team Members Management -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">👥 Team Members (@Model.TeamMembers.Count)</h5>
-        </div>
-        <div class="card-body">
-            <form method="post" class="row g-3 mb-3" data-val="false">
-                <input type="hidden" name="SubmitAction" value="AddMember" />
-                <div class="col-md-5">
-                    <label asp-for="NewMember.Name" class="form-label"></label>
-                    <input asp-for="NewMember.Name" class="form-control" placeholder="Enter member name" />
-                    <span asp-validation-for="NewMember.Name" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-5">
-                    <label asp-for="NewMember.Email" class="form-label"></label>
-                    <input asp-for="NewMember.Email" class="form-control" type="email" placeholder="Enter email address" />
-                    <span asp-validation-for="NewMember.Email" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-success d-block w-100">
-                        Add Member
-                    </button>
-                </div>
-            </form>
-
-            @if (Model.TeamMembers.Any())
-            {
-                <div class="row">
-                    @foreach (var member in Model.TeamMembers)
-                    {
-                        <div class="col-md-6 col-lg-4 mb-2">
-                            <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                                <div>
-                                    <strong>@member.Name</strong><br>
-                                    <small class="text-muted">@member.Email</small>
-                                </div>
-                                <form method="post" asp-page-handler="RemoveMember" class="d-inline"
-                                      onsubmit="return confirm('Are you sure you want to remove this member?')">
-                                    <input type="hidden" name="id" value="@member.Id" />
-                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Remove Member">
-                                        ×
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info" role="alert">
-                    No team members added yet. Add team members to assign items to them.
-                </div>
-            }
-        </div>
-    </div>
 
     <!-- Kanban Board -->
     <div class="row">
@@ -309,7 +221,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
