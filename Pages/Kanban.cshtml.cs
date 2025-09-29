@@ -45,13 +45,46 @@ public class KanbanModel : PageModel
         }
     }
 
-    public IActionResult OnPostAddItem()
+    [BindProperty]
+    public string? SubmitAction { get; set; }
+
+    public IActionResult OnPost()
     {
-        _logger.LogInformation("OnPostAddItem called! ModelState.IsValid: {IsValid}", ModelState.IsValid);
+        _logger.LogInformation("OnPost called! SubmitAction: {Action}, ModelState.IsValid: {IsValid}", SubmitAction, ModelState.IsValid);
         
-        if (!ModelState.IsValid)
+        if (SubmitAction == "AddItem")
         {
-            _logger.LogWarning("ModelState is invalid");
+            return HandleAddItem();
+        }
+        else if (SubmitAction == "AddMember")
+        {
+            return HandleAddMember();
+        }
+        
+        _logger.LogWarning("Unknown submit action: {Action}", SubmitAction);
+        return Page();
+    }
+
+    private IActionResult HandleAddItem()
+    {
+        _logger.LogInformation("HandleAddItem called!");
+        
+        // Clear ModelState and validate only NewItem
+        ModelState.Clear();
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(NewItem);
+        var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+        var isValid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(NewItem, validationContext, validationResults, true);
+        
+        if (!isValid)
+        {
+            _logger.LogWarning("NewItem model is invalid");
+            foreach (var result in validationResults)
+            {
+                foreach (var memberName in result.MemberNames)
+                {
+                    ModelState.AddModelError($"NewItem.{memberName}", result.ErrorMessage ?? "Invalid value");
+                }
+            }
             return Page();
         }
 
@@ -75,18 +108,24 @@ public class KanbanModel : PageModel
         return RedirectToPage();
     }
 
-    public IActionResult OnPostAddMember()
+    private IActionResult HandleAddMember()
     {
-        _logger.LogInformation("OnPostAddMember called! ModelState.IsValid: {IsValid}", ModelState.IsValid);
+        _logger.LogInformation("HandleAddMember called!");
         
-        if (!ModelState.IsValid)
+        // Clear ModelState and validate only NewMember
+        ModelState.Clear();
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(NewMember);
+        var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+        var isValid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(NewMember, validationContext, validationResults, true);
+        
+        if (!isValid)
         {
-            _logger.LogWarning("ModelState is invalid");
-            foreach (var modelState in ModelState.Values)
+            _logger.LogWarning("NewMember model is invalid");
+            foreach (var result in validationResults)
             {
-                foreach (var error in modelState.Errors)
+                foreach (var memberName in result.MemberNames)
                 {
-                    _logger.LogError("ModelState error: {Error}", error.ErrorMessage);
+                    ModelState.AddModelError($"NewMember.{memberName}", result.ErrorMessage ?? "Invalid value");
                 }
             }
             return Page();

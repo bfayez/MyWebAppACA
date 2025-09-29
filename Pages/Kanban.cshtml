@@ -22,7 +22,8 @@
             <h5 class="mb-0">✨ Add New Item</h5>
         </div>
         <div class="card-body">
-            <form method="post" asp-page-handler="AddItem" class="row g-3">
+            <form method="post" class="row g-3" data-val="false">
+                <input type="hidden" name="SubmitAction" value="AddItem" />
                 <div class="col-md-4">
                     <label asp-for="NewItem.Title" class="form-label"></label>
                     <input asp-for="NewItem.Title" class="form-control" placeholder="Enter item title" />
@@ -61,7 +62,8 @@
             <h5 class="mb-0">👥 Team Members (@Model.TeamMembers.Count)</h5>
         </div>
         <div class="card-body">
-            <form method="post" asp-page-handler="AddMember" class="row g-3 mb-3">
+            <form method="post" class="row g-3 mb-3" data-val="false">
+                <input type="hidden" name="SubmitAction" value="AddMember" />
                 <div class="col-md-5">
                     <label asp-for="NewMember.Name" class="form-label"></label>
                     <input asp-for="NewMember.Name" class="form-control" placeholder="Enter member name" />
