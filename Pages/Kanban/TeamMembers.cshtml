@@ -1,0 +1,360 @@
+@page
+@model MyWebApp.Pages.Kanban.TeamMembersModel
+@{
+    ViewData["Title"] = "Team Members";
+}
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Kanban">Kanban Board</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Team Members</li>
+        </ol>
+    </nav>
+
+    <h1>👥 @ViewData["Title"]</h1>
+    <p>Manage your team members. Members can be assigned to Kanban items.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
+            @Model.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Add New Member Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">✨ Add New Team Member</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NewMember.Name" class="form-label"></label>
+                            <input asp-for="NewMember.Name" class="form-control" placeholder="Enter member name" required />
+                            <span asp-validation-for="NewMember.Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="NewMember.Email" class="form-label"></label>
+                            <input asp-for="NewMember.Email" class="form-control" type="email" placeholder="Enter email address" required />
+                            <span asp-validation-for="NewMember.Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-person-plus"></i> Add Team Member
+                            </button>
+                            <a asp-page="/Kanban" class="btn btn-secondary ms-2">
+                                <i class="bi bi-arrow-left"></i> Back to Kanban Board
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Team Members List -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Current Team Members (@Model.TeamMembers.Count)</h5>
+                    @if (Model.TeamMembers.Any())
+                    {
+                        <span class="badge bg-primary">@Model.TeamMembers.Count members</span>
+                    }
+                </div>
+                <div class="card-body">
+                    <div id="membersList">
+                        @if (Model.TeamMembers.Any())
+                        {
+                            <div class="row">
+                                @foreach (var member in Model.TeamMembers)
+                                {
+                                    <div class="col-md-6 col-lg-4 mb-3" id="member-@member.Id">
+                                        <div class="card border">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="card-title mb-1">
+                                                            <i class="bi bi-person-circle text-primary"></i>
+                                                            @member.Name
+                                                        </h6>
+                                                        <p class="card-text text-muted mb-2">
+                                                            <i class="bi bi-envelope"></i>
+                                                            @member.Email
+                                                        </p>
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-calendar"></i>
+                                                            Added: @member.CreatedAt.ToString("MMM dd, yyyy")
+                                                        </small>
+                                                    </div>
+                                                    <div class="ms-2">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                onclick="removeMember(@member.Id, '@member.Name')" 
+                                                                title="Remove Member">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5" id="noMembersMessage">
+                                <i class="bi bi-people h1 text-muted"></i>
+                                <h5 class="text-muted">No team members yet</h5>
+                                <p class="text-muted">Add your first team member using the form above.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">💡 Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Use real names for better collaboration</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Valid email addresses are required</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Members can be assigned to Kanban items</li>
+                        <li class="mb-0"><i class="bi bi-info-circle text-info"></i> Removing a member unassigns them from all items</li>
+                    </ul>
+                </div>
+            </div>
+
+            @if (Model.TeamMembers.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">📊 Statistics</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="bg-primary text-white p-3 rounded">
+                                    <h4>@Model.TeamMembers.Count</h4>
+                                    <small>Total Members</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-info text-white p-3 rounded">
+                                    <h4>@Model.GetAssignedMembersCount()</h4>
+                                    <small>With Assignments</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Handle add member form submission
+        document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    // Insert alert
+                    const container = document.querySelector('.container-fluid');
+                    const firstCard = document.querySelector('.card');
+                    container.insertBefore(alertDiv, firstCard);
+                    
+                    // Add member to the list
+                    addMemberToList(data.member);
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Scroll to top
+                    window.scrollTo(0, 0);
+                } else {
+                    // Handle validation errors
+                    if (data.errors) {
+                        Object.keys(data.errors).forEach(field => {
+                            const input = document.querySelector(`[name="${field}"]`);
+                            if (input) {
+                                const errorSpan = input.parentElement.querySelector('.text-danger');
+                                if (errorSpan) {
+                                    errorSpan.textContent = data.errors[field][0];
+                                }
+                            }
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the member. Please try again.');
+            })
+            .finally(() => {
+                // Restore button
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        });
+
+        function addMemberToList(member) {
+            const membersList = document.getElementById('membersList');
+            const noMembersMessage = document.getElementById('noMembersMessage');
+            
+            // Remove "no members" message if it exists
+            if (noMembersMessage) {
+                noMembersMessage.remove();
+            }
+            
+            // Create member card HTML
+            const memberHtml = `
+                <div class="col-md-6 col-lg-4 mb-3" id="member-${member.id}">
+                    <div class="card border">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1">
+                                        <i class="bi bi-person-circle text-primary"></i>
+                                        ${member.name}
+                                    </h6>
+                                    <p class="card-text text-muted mb-2">
+                                        <i class="bi bi-envelope"></i>
+                                        ${member.email}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i>
+                                        Added: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
+                                    </small>
+                                </div>
+                                <div class="ms-2">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="removeMember(${member.id}, '${member.name}')" 
+                                            title="Remove Member">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // If members list doesn't have a row yet, create one
+            let rowDiv = membersList.querySelector('.row');
+            if (!rowDiv) {
+                rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+                membersList.appendChild(rowDiv);
+            }
+            
+            rowDiv.insertAdjacentHTML('beforeend', memberHtml);
+        }
+
+        function removeMember(memberId, memberName) {
+            if (!confirm(`Are you sure you want to remove ${memberName}? This will unassign them from all items.`)) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('id', memberId);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+            
+            fetch(window.location.href + '?handler=RemoveMember', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(data => {
+                if (data.success) {
+                    // Remove member from list
+                    const memberElement = document.getElementById(`member-${memberId}`);
+                    if (memberElement) {
+                        memberElement.remove();
+                    }
+                    
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    const container = document.querySelector('.container-fluid');
+                    const firstCard = document.querySelector('.card');
+                    container.insertBefore(alertDiv, firstCard);
+                    
+                    // Check if we need to show "no members" message
+                    const remainingMembers = document.querySelectorAll('[id^="member-"]');
+                    if (remainingMembers.length === 0) {
+                        const membersList = document.getElementById('membersList');
+                        membersList.innerHTML = `
+                            <div class="text-center py-5" id="noMembersMessage">
+                                <i class="bi bi-people h1 text-muted"></i>
+                                <h5 class="text-muted">No team members yet</h5>
+                                <p class="text-muted">Add your first team member using the form above.</p>
+                            </div>
+                        `;
+                    }
+                    
+                    window.scrollTo(0, 0);
+                } else {
+                    alert('Error removing member: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while removing the member. Please try again.');
+            });
+        }
+    </script>
+}
