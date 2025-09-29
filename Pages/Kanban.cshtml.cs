@@ -47,8 +47,11 @@ public class KanbanModel : PageModel
 
     public IActionResult OnPostAddItem()
     {
+        _logger.LogInformation("OnPostAddItem called! ModelState.IsValid: {IsValid}", ModelState.IsValid);
+        
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is invalid");
             return Page();
         }
 
@@ -74,8 +77,18 @@ public class KanbanModel : PageModel
 
     public IActionResult OnPostAddMember()
     {
+        _logger.LogInformation("OnPostAddMember called! ModelState.IsValid: {IsValid}", ModelState.IsValid);
+        
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is invalid");
+            foreach (var modelState in ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    _logger.LogError("ModelState error: {Error}", error.ErrorMessage);
+                }
+            }
             return Page();
         }
 
