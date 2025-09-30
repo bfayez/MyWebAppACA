@@ -93,11 +93,13 @@ The CalendarModel follows the standard ASP.NET Core Razor Pages pattern with the
 
 The Calendar page includes several key sections:
 
-1. **Event Creation Form**
+1. **Event Creation Form** (`Pages/Shared/_CreateEventForm.cshtml`)
+   - Separated into a reusable partial view component for better modularity
    - Responsive Bootstrap form layout
    - HTML5 date and time input controls
    - Client-side validation with validation summary
    - Auto-population of end date/time based on start date/time
+   - Integrated into the Calendar page using `@await Html.PartialAsync("_CreateEventForm", Model)`
 
 2. **Calendar Grid Display**
    - Monthly calendar view showing current month
@@ -117,6 +119,23 @@ The Calendar page includes several key sections:
    - Responsive design for mobile and desktop
 
 #### JavaScript Enhancements
+
+**CreateEventForm Partial View** (`Pages/Shared/_CreateEventForm.cshtml`)
+
+The event creation form has been extracted into a separate partial view component for improved modularity and reusability:
+
+**Benefits:**
+- **Separation of Concerns**: Event creation UI is isolated from the main calendar display
+- **Reusability**: The form component can be reused in other parts of the application
+- **Maintainability**: Changes to the form UI only affect the partial view file
+- **Clean Architecture**: Follows the single responsibility principle
+
+**Usage:**
+```razor
+@await Html.PartialAsync("_CreateEventForm", Model)
+```
+
+The partial view receives the CalendarModel as its model, providing access to the `NewEvent` property for data binding.
 
 ```javascript
 // Auto-set end date to match start date when start date changes
@@ -190,6 +209,21 @@ document.addEventListener('DOMContentLoaded', function() {
 4. Event is removed and success message is displayed
 
 ## Technical Implementation Details
+
+### Modular Architecture
+
+The Calendar feature has been refactored to follow a modular architecture:
+
+**Component Structure:**
+- **Calendar.cshtml**: Main calendar page with event display and calendar grid
+- **_CreateEventForm.cshtml**: Reusable partial view for event creation
+- **Calendar.cshtml.cs**: Page model with business logic and data management
+
+This separation improves:
+- **Code Organization**: Each component has a clear, focused responsibility
+- **Maintainability**: Changes to one component don't affect others
+- **Testability**: Individual components can be tested in isolation
+- **Scalability**: New form components or views can be added easily
 
 ### Data Storage
 - **Current**: In-memory storage using static collections

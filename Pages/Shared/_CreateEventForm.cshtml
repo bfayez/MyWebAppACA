@@ -1,0 +1,53 @@
+@model MyWebApp.Pages.CalendarModel
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">📅 Add New Event</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="NewEvent.Title" class="form-label"></label>
+                <input asp-for="NewEvent.Title" class="form-control" placeholder="Enter event title" />
+                <span asp-validation-for="NewEvent.Title" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="NewEvent.Description" class="form-label"></label>
+                <input asp-for="NewEvent.Description" class="form-control" placeholder="Enter description (optional)" />
+                <span asp-validation-for="NewEvent.Description" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-3">
+                <label asp-for="NewEvent.StartDate" class="form-label"></label>
+                <input asp-for="NewEvent.StartDate" type="date" class="form-control" />
+                <span asp-validation-for="NewEvent.StartDate" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-3">
+                <label asp-for="NewEvent.StartTime" class="form-label"></label>
+                <input asp-for="NewEvent.StartTime" type="time" class="form-control" />
+                <span asp-validation-for="NewEvent.StartTime" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-3">
+                <label asp-for="NewEvent.EndDate" class="form-label"></label>
+                <input asp-for="NewEvent.EndDate" type="date" class="form-control" />
+                <span asp-validation-for="NewEvent.EndDate" class="text-danger"></span>
+            </div>
+            
+            <div class="col-md-3">
+                <label asp-for="NewEvent.EndTime" class="form-label"></label>
+                <input asp-for="NewEvent.EndTime" type="time" class="form-control" />
+                <span asp-validation-for="NewEvent.EndTime" class="text-danger"></span>
+            </div>
+            
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add Event
+                </button>
+                <a asp-page="/Index" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
