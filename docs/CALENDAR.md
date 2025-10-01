@@ -9,17 +9,31 @@ This document provides comprehensive documentation for the Calendar feature impl
 ### ✅ Core Requirements Met
 
 1. **Calendar Format Event Management**: Users can view events in a visual calendar grid layout
-2. **Add Events**: Users can create new events with date and time selection
+2. **Add Events**: Users can create new events with date and time selection via a dedicated page
 3. **Date/Time Selection**: Intuitive date and time picker inputs for scheduling
 4. **Delete Events**: Users can remove events with confirmation dialogs
+5. **Multiple Event Creation**: Users can add multiple events in one session before returning to the calendar
 
 ## Architecture
+
+### Modular Page Structure
+
+The Calendar feature is organized in a modular folder structure:
+
+```
+Pages/
+├── Calendar/
+│   ├── Index.cshtml              # Main calendar view
+│   ├── Index.cshtml.cs           # Calendar page model
+│   ├── CreateEvent.cshtml        # Event creation page
+│   └── CreateEvent.cshtml.cs     # Event creation page model
+```
 
 ### Backend Components
 
 #### Models
 
-**CalendarEvent Class** (`Pages/Calendar.cshtml.cs`)
+**CalendarEvent Class** (`Pages/Calendar/Index.cshtml.cs`)
 ```csharp
 public class CalendarEvent
 {
@@ -37,7 +51,7 @@ public class CalendarEvent
 }
 ```
 
-**CreateEventForm Class** (`Pages/Calendar.cshtml.cs`)
+**CreateEventForm Class** (`Pages/Calendar/Index.cshtml.cs`)
 ```csharp
 public class CreateEventForm
 {
@@ -68,36 +82,80 @@ public class CreateEventForm
 }
 ```
 
-#### Page Model
+#### Page Models
 
-**CalendarModel Class** (`Pages/Calendar.cshtml.cs`)
+**IndexModel Class** (`Pages/Calendar/Index.cshtml.cs`)
 
-The CalendarModel follows the standard ASP.NET Core Razor Pages pattern with the following key methods:
+The IndexModel handles the main calendar view with the following methods:
 
-- **OnGet()**: Handles GET requests, displays success messages from TempData
-- **OnPost()**: Handles event creation, validates form data, and creates new events
+- **OnGet()**: Handles GET requests, displays success messages from TempData, and shows all events
 - **OnPostDelete(int id)**: Handles event deletion with confirmation
+
+**CreateEventModel Class** (`Pages/Calendar/CreateEvent.cshtml.cs`)
+
+The CreateEventModel handles event creation with the following methods:
+
+- **OnGet()**: Displays the event creation form and tracks events added in the session
+- **OnPost()**: Validates and creates new events, supports adding multiple events in one session
 
 **Key Features:**
 - In-memory storage using static collections (suitable for demo purposes)
 - Auto-incrementing ID generation
 - Comprehensive validation using Data Annotations
 - POST-REDIRECT-GET pattern for form handling
+- Session tracking for multiple event creation
 - Logging for all operations
 
 ### Frontend Components
 
 #### User Interface
 
-**Calendar Page** (`Pages/Calendar.cshtml`)
+**Calendar Page** (`Pages/Calendar/Index.cshtml`)
 
-The Calendar page includes several key sections:
+The main Calendar page displays:
 
-1. **Event Creation Form**
+1. **Calendar Grid Display** (Always Visible)
+   - Monthly calendar view showing current month
+   - Visual representation of events on their scheduled dates
+   - Events display with time and title
+   - Support for multiple events per day (with overflow indication)
+   - Today's date highlighted with special styling
+   - **Grid shows even when there are no events**
+
+2. **Add Event Button**
+   - Prominent button to navigate to the event creation page
+   - Redirects to `/Calendar/CreateEvent`
+
+3. **Event Lists** (When events exist)
+   - **Today's Events**: Shows events scheduled for today
+   - **Upcoming Events**: Shows future events (limited to 5 most recent)
+   - **Past Events**: Shows completed events (limited to 5 most recent)
+
+4. **Interactive Elements**
+   - Delete buttons with confirmation dialogs
+   - Success/error message display
+   - Responsive design for mobile and desktop
+
+**Create Event Page** (`Pages/Calendar/CreateEvent.cshtml`)
+
+The dedicated event creation page includes:
+
+1. **Breadcrumb Navigation**
+   - Clear navigation path back to Calendar
+
+2. **Event Creation Form**
    - Responsive Bootstrap form layout
    - HTML5 date and time input controls
    - Client-side validation with validation summary
    - Auto-population of end date/time based on start date/time
+
+3. **Session Tracker**
+   - Shows count of events added in current session
+   - Encourages adding multiple events
+
+4. **Action Buttons**
+   - **Add Event**: Creates event and clears form for next entry
+   - **Done**: Returns to calendar view
 
 2. **Calendar Grid Display**
    - Monthly calendar view showing current month
@@ -117,6 +175,8 @@ The Calendar page includes several key sections:
    - Responsive design for mobile and desktop
 
 #### JavaScript Enhancements
+
+**Create Event Page** (`Pages/Calendar/CreateEvent.cshtml`)
 
 ```javascript
 // Auto-set end date to match start date when start date changes
@@ -147,20 +207,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Auto-dismiss success alerts after 3 seconds
+    const successAlert = document.querySelector('.alert-success.alert-dismissible');
+    if (successAlert) {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(successAlert);
+            bsAlert.close();
+        }, 3000);
+    }
 });
 ```
 
 ## API Endpoints
 
 ### GET /Calendar
-- **Purpose**: Display the calendar page with existing events
-- **Response**: Renders the calendar view with event form and calendar grid
+- **Purpose**: Display the main calendar page with existing events
+- **Response**: Renders the calendar view with calendar grid (always visible) and event lists
+- **Features**: Calendar grid displays even when there are no events
 
-### POST /Calendar
+### GET /Calendar/CreateEvent
+- **Purpose**: Display the event creation page
+- **Response**: Renders the event creation form
+- **Features**: Tracks events added in current session
+
+### POST /Calendar/CreateEvent
 - **Purpose**: Create a new event
 - **Request Body**: CreateEventForm with event details
-- **Response**: Redirects to GET /Calendar with success message
+- **Response**: Redirects to GET /Calendar/CreateEvent with success message
 - **Validation**: Server-side validation for all required fields
+- **Features**: Clears form after creation, allows adding multiple events
 
 ### POST /Calendar?handler=Delete
 - **Purpose**: Delete an existing event
@@ -169,18 +245,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ## Usage Examples
 
-### Creating an Event
+### Viewing the Calendar
 
 1. Navigate to the Calendar page (`/Calendar`)
-2. Fill out the "Add New Event" form:
+2. View the calendar grid showing the current month
+3. **Calendar grid is always visible, even with 0 events**
+4. Events are displayed on their respective dates with time and title
+5. Event lists show Today's, Upcoming, and Past events (when events exist)
+
+### Creating Events
+
+1. From the Calendar page, click "Add New Event" button
+2. Navigate to `/Calendar/CreateEvent`
+3. Fill out the event creation form:
    - **Event Title**: Required, up to 100 characters
    - **Description**: Optional, up to 500 characters  
    - **Start Date**: Required, HTML5 date picker
    - **Start Time**: Required, HTML5 time picker
    - **End Date**: Required, auto-populates from start date
    - **End Time**: Required, auto-populates to 1 hour after start time
-3. Click "Add Event" button
-4. Event appears in calendar grid and appropriate event list
+4. Click "Add Event" to create the event
+5. Form clears automatically for adding another event
+6. Session tracker shows count of events added
+7. **Add multiple events in one session**
+8. Click "Done" when finished to return to calendar
+9. Calendar displays all newly created events
 
 ### Deleting an Event
 
@@ -190,6 +279,15 @@ document.addEventListener('DOMContentLoaded', function() {
 4. Event is removed and success message is displayed
 
 ## Technical Implementation Details
+
+### Modular Architecture
+
+The Calendar feature follows a modular page-based architecture:
+
+- **Separation of Concerns**: Event creation is separated from calendar display
+- **Dedicated Pages**: Each major function has its own page (Index for viewing, CreateEvent for creating)
+- **Shared State**: Static methods allow sharing event data between pages
+- **Clean URLs**: `/Calendar` for main view, `/Calendar/CreateEvent` for event creation
 
 ### Data Storage
 - **Current**: In-memory storage using static collections

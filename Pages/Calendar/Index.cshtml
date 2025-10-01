@@ -1,5 +1,5 @@
 @page
-@model CalendarModel
+@model MyWebApp.Pages.Calendar.IndexModel
 @{
     ViewData["Title"] = "Calendar";
 }
@@ -15,66 +15,19 @@
         </div>
     }
 
-    <!-- Add New Event Form -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">📅 Add New Event</h5>
-        </div>
-        <div class="card-body">
-            <form method="post" class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="NewEvent.Title" class="form-label"></label>
-                    <input asp-for="NewEvent.Title" class="form-control" placeholder="Enter event title" />
-                    <span asp-validation-for="NewEvent.Title" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-6">
-                    <label asp-for="NewEvent.Description" class="form-label"></label>
-                    <input asp-for="NewEvent.Description" class="form-control" placeholder="Enter description (optional)" />
-                    <span asp-validation-for="NewEvent.Description" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-3">
-                    <label asp-for="NewEvent.StartDate" class="form-label"></label>
-                    <input asp-for="NewEvent.StartDate" type="date" class="form-control" />
-                    <span asp-validation-for="NewEvent.StartDate" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-3">
-                    <label asp-for="NewEvent.StartTime" class="form-label"></label>
-                    <input asp-for="NewEvent.StartTime" type="time" class="form-control" />
-                    <span asp-validation-for="NewEvent.StartTime" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-3">
-                    <label asp-for="NewEvent.EndDate" class="form-label"></label>
-                    <input asp-for="NewEvent.EndDate" type="date" class="form-control" />
-                    <span asp-validation-for="NewEvent.EndDate" class="text-danger"></span>
-                </div>
-                
-                <div class="col-md-3">
-                    <label asp-for="NewEvent.EndTime" class="form-label"></label>
-                    <input asp-for="NewEvent.EndTime" type="time" class="form-control" />
-                    <span asp-validation-for="NewEvent.EndTime" class="text-danger"></span>
-                </div>
-                
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Add Event
-                    </button>
-                    <a asp-page="/Index" class="btn btn-secondary ms-2">Cancel</a>
-                </div>
-            </form>
-        </div>
+    <!-- Add Event Button -->
+    <div class="mb-4">
+        <a asp-page="/Calendar/CreateEvent" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Event
+        </a>
     </div>
 
-    <!-- Calendar View -->
+    <!-- Calendar View - Always Display -->
     <div class="row">
         <div class="col-12">
             <h3>📅 Your Events (@Model.Events.Count)</h3>
             
-            @if (Model.Events.Any())
-            {
+            @{
                 var today = DateTime.Today;
                 var currentMonth = today.Month;
                 var currentYear = today.Year;
@@ -86,64 +39,67 @@
                 var todayEvents = Model.Events.Where(e => e.IsToday).OrderBy(e => e.StartDateTime).ToList();
                 var upcomingEvents = Model.Events.Where(e => e.IsUpcoming).OrderBy(e => e.StartDateTime).Take(5).ToList();
                 var pastEvents = Model.Events.Where(e => e.IsPast).OrderByDescending(e => e.StartDateTime).Take(5).ToList();
-                
-                <!-- Simple Calendar Grid -->
-                <div class="card mb-4">
-                    <div class="card-header text-center">
-                        <h5 class="mb-0">@firstDayOfMonth.ToString("MMMM yyyy")</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-bordered mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center py-2">Sunday</th>
-                                    <th class="text-center py-2">Monday</th>
-                                    <th class="text-center py-2">Tuesday</th>
-                                    <th class="text-center py-2">Wednesday</th>
-                                    <th class="text-center py-2">Thursday</th>
-                                    <th class="text-center py-2">Friday</th>
-                                    <th class="text-center py-2">Saturday</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (var date = firstDisplayDate; date <= lastDisplayDate; date = date.AddDays(7))
-                                {
-                                    <tr style="height: 100px;">
-                                        @for (int i = 0; i < 7; i++)
-                                        {
-                                            var currentDate = date.AddDays(i);
-                                            var dayEvents = Model.Events.Where(e => e.StartDateTime.Date == currentDate.Date).ToList();
-                                            var isCurrentMonth = currentDate.Month == currentMonth;
-                                            var isToday = currentDate.Date == today;
-                                            
-                                            <td class="align-top p-1 @(isCurrentMonth ? "" : "text-muted bg-light") @(isToday ? "border-primary border-2" : "")">
-                                                <div class="d-flex flex-column h-100">
-                                                    <div class="fw-bold small text-center @(isToday ? "text-primary" : "")">
-                                                        @currentDate.Day
-                                                    </div>
-                                                    <div class="flex-grow-1 overflow-hidden">
-                                                        @foreach (var eventItem in dayEvents.Take(2))
-                                                        {
-                                                            <div class="badge bg-primary text-truncate d-block mb-1 small" 
-                                                                 title="@eventItem.Title - @eventItem.StartDateTime.ToString("HH:mm")">
-                                                                @eventItem.StartDateTime.ToString("HH:mm") @eventItem.Title
-                                                            </div>
-                                                        }
-                                                        @if (dayEvents.Count > 2)
-                                                        {
-                                                            <div class="small text-muted">+@(dayEvents.Count - 2) more</div>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        }
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+            }
+            
+            <!-- Simple Calendar Grid -->
+            <div class="card mb-4">
+                <div class="card-header text-center">
+                    <h5 class="mb-0">@firstDayOfMonth.ToString("MMMM yyyy")</h5>
                 </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center py-2">Sunday</th>
+                                <th class="text-center py-2">Monday</th>
+                                <th class="text-center py-2">Tuesday</th>
+                                <th class="text-center py-2">Wednesday</th>
+                                <th class="text-center py-2">Thursday</th>
+                                <th class="text-center py-2">Friday</th>
+                                <th class="text-center py-2">Saturday</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var date = firstDisplayDate; date <= lastDisplayDate; date = date.AddDays(7))
+                            {
+                                <tr style="height: 100px;">
+                                    @for (int i = 0; i < 7; i++)
+                                    {
+                                        var currentDate = date.AddDays(i);
+                                        var dayEvents = Model.Events.Where(e => e.StartDateTime.Date == currentDate.Date).ToList();
+                                        var isCurrentMonth = currentDate.Month == currentMonth;
+                                        var isToday = currentDate.Date == today;
+                                        
+                                        <td class="align-top p-1 @(isCurrentMonth ? "" : "text-muted bg-light") @(isToday ? "border-primary border-2" : "")">
+                                            <div class="d-flex flex-column h-100">
+                                                <div class="fw-bold small text-center @(isToday ? "text-primary" : "")">
+                                                    @currentDate.Day
+                                                </div>
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    @foreach (var eventItem in dayEvents.Take(2))
+                                                    {
+                                                        <div class="badge bg-primary text-truncate d-block mb-1 small" 
+                                                             title="@eventItem.Title - @eventItem.StartDateTime.ToString("HH:mm")">
+                                                            @eventItem.StartDateTime.ToString("HH:mm") @eventItem.Title
+                                                        </div>
+                                                    }
+                                                    @if (dayEvents.Count > 2)
+                                                    {
+                                                        <div class="small text-muted">+@(dayEvents.Count - 2) more</div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
+            @if (Model.Events.Any())
+            {
                 <!-- Event List -->
                 <div class="row">
                     <!-- Today's Events -->
@@ -267,46 +223,6 @@
                     </div>
                 </div>
             }
-            else
-            {
-                <div class="alert alert-info text-center" role="alert">
-                    <h5>📅 No events yet!</h5>
-                    <p class="mb-0">Create your first event using the form above to get started.</p>
-                </div>
-            }
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-    <script>
-        // Auto-set end date to match start date when start date changes
-        document.addEventListener('DOMContentLoaded', function() {
-            const startDateInput = document.querySelector('input[name="NewEvent.StartDate"]');
-            const endDateInput = document.querySelector('input[name="NewEvent.EndDate"]');
-            const startTimeInput = document.querySelector('input[name="NewEvent.StartTime"]');
-            const endTimeInput = document.querySelector('input[name="NewEvent.EndTime"]');
-            
-            if (startDateInput && endDateInput) {
-                startDateInput.addEventListener('change', function() {
-                    if (!endDateInput.value || endDateInput.value < this.value) {
-                        endDateInput.value = this.value;
-                    }
-                });
-            }
-            
-            if (startTimeInput && endTimeInput) {
-                startTimeInput.addEventListener('change', function() {
-                    if (startDateInput.value === endDateInput.value) {
-                        const startTime = this.value;
-                        const [hours, minutes] = startTime.split(':').map(Number);
-                        const endTime = new Date(0, 0, 0, hours + 1, minutes);
-                        const endTimeStr = endTime.toTimeString().slice(0, 5);
-                        endTimeInput.value = endTimeStr;
-                    }
-                });
-            }
-        });
-    </script>
-}

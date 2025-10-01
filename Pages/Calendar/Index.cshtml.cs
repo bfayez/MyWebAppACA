@@ -2,21 +2,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 
-namespace MyWebApp.Pages;
+namespace MyWebApp.Pages.Calendar;
 
-public class CalendarModel : PageModel
+public class IndexModel : PageModel
 {
-    private readonly ILogger<CalendarModel> _logger;
+    private readonly ILogger<IndexModel> _logger;
     private static readonly List<CalendarEvent> _events = new();
     private static int _nextId = 1;
 
-    public CalendarModel(ILogger<CalendarModel> logger)
+    public IndexModel(ILogger<IndexModel> logger)
     {
         _logger = logger;
     }
-
-    [BindProperty]
-    public CreateEventForm NewEvent { get; set; } = new();
 
     public IReadOnlyList<CalendarEvent> Events => _events.AsReadOnly();
 
@@ -33,34 +30,6 @@ public class CalendarModel : PageModel
         }
     }
 
-    public IActionResult OnPost()
-    {
-        if (!ModelState.IsValid)
-        {
-            return Page();
-        }
-
-        var calendarEvent = new CalendarEvent
-        {
-            Id = _nextId++,
-            Title = NewEvent.Title,
-            Description = NewEvent.Description,
-            StartDateTime = NewEvent.StartDate.ToDateTime(NewEvent.StartTime),
-            EndDateTime = NewEvent.EndDate.ToDateTime(NewEvent.EndTime),
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _events.Add(calendarEvent);
-
-        _logger.LogInformation("New event created: {Title} at {Time}", 
-            calendarEvent.Title, DateTime.UtcNow);
-
-        TempData["SuccessMessage"] = "Event created successfully!";
-        
-        // Redirect to GET to clear the form (POST-REDIRECT-GET pattern)
-        return RedirectToPage();
-    }
-
     public IActionResult OnPostDelete(int id)
     {
         var eventItem = _events.FirstOrDefault(e => e.Id == id);
@@ -75,6 +44,15 @@ public class CalendarModel : PageModel
 
         return RedirectToPage();
     }
+
+    // Static methods to access events from other pages
+    public static void AddEvent(CalendarEvent calendarEvent)
+    {
+        calendarEvent.Id = _nextId++;
+        _events.Add(calendarEvent);
+    }
+
+    public static IReadOnlyList<CalendarEvent> GetAllEvents() => _events.AsReadOnly();
 }
 
 public class CalendarEvent

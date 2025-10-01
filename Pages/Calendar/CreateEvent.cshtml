@@ -1,0 +1,151 @@
+@page
+@model MyWebApp.Pages.Calendar.CreateEventModel
+@{
+    ViewData["Title"] = "Create Event";
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Calendar/Index">Calendar</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create Event</li>
+        </ol>
+    </nav>
+
+    <h1>✨ @ViewData["Title"]</h1>
+    <p>Add one or multiple events to your calendar. Click "Add Event" to add each event, then "Done" to return to the calendar.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @Model.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📅 Event Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NewEvent.Title" class="form-label"></label>
+                            <input asp-for="NewEvent.Title" class="form-control" placeholder="Enter event title" />
+                            <span asp-validation-for="NewEvent.Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="NewEvent.Description" class="form-label"></label>
+                            <input asp-for="NewEvent.Description" class="form-control" placeholder="Enter description (optional)" />
+                            <span asp-validation-for="NewEvent.Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label asp-for="NewEvent.StartDate" class="form-label"></label>
+                            <input asp-for="NewEvent.StartDate" type="date" class="form-control" />
+                            <span asp-validation-for="NewEvent.StartDate" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label asp-for="NewEvent.StartTime" class="form-label"></label>
+                            <input asp-for="NewEvent.StartTime" type="time" class="form-control" />
+                            <span asp-validation-for="NewEvent.StartTime" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label asp-for="NewEvent.EndDate" class="form-label"></label>
+                            <input asp-for="NewEvent.EndDate" type="date" class="form-control" />
+                            <span asp-validation-for="NewEvent.EndDate" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label asp-for="NewEvent.EndTime" class="form-label"></label>
+                            <input asp-for="NewEvent.EndTime" type="time" class="form-control" />
+                            <span asp-validation-for="NewEvent.EndTime" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Add Event
+                            </button>
+                            <a asp-page="/Calendar/Index" class="btn btn-success ms-2">
+                                <i class="bi bi-check-circle"></i> Done
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 Events Added This Session</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.EventsAddedThisSession > 0)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill"></i> 
+                            <strong>@Model.EventsAddedThisSession</strong> event(s) added!
+                        </div>
+                        <p class="text-muted small">
+                            You can continue adding more events or click "Done" to return to the calendar.
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            No events added yet. Fill out the form and click "Add Event" to create your first event.
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        // Auto-set end date to match start date when start date changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDateInput = document.querySelector('input[name="NewEvent.StartDate"]');
+            const endDateInput = document.querySelector('input[name="NewEvent.EndDate"]');
+            const startTimeInput = document.querySelector('input[name="NewEvent.StartTime"]');
+            const endTimeInput = document.querySelector('input[name="NewEvent.EndTime"]');
+            
+            if (startDateInput && endDateInput) {
+                startDateInput.addEventListener('change', function() {
+                    if (!endDateInput.value || endDateInput.value < this.value) {
+                        endDateInput.value = this.value;
+                    }
+                });
+            }
+            
+            if (startTimeInput && endTimeInput) {
+                startTimeInput.addEventListener('change', function() {
+                    if (startDateInput.value === endDateInput.value) {
+                        const startTime = this.value;
+                        const [hours, minutes] = startTime.split(':').map(Number);
+                        const endTime = new Date(0, 0, 0, hours + 1, minutes);
+                        const endTimeStr = endTime.toTimeString().slice(0, 5);
+                        endTimeInput.value = endTimeStr;
+                    }
+                });
+            }
+
+            // Auto-dismiss success alerts after 3 seconds
+            const successAlert = document.querySelector('.alert-success.alert-dismissible');
+            if (successAlert) {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(successAlert);
+                    bsAlert.close();
+                }, 3000);
+            }
+        });
+    </script>
+}
